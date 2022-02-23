@@ -31,14 +31,32 @@ services:
     links:
       - db
 
+  # MySQL
   db:
-    container_name: laravel-ecr-test
-    image: mysql:8.0
+    image: mysql:5.7
+    container_name: test-laravel-docker-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOTPASS}
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${USERNAME}
+      MYSQL_PASSWORD: ${USERPASS}
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./docker/mysql/sql:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
+
+  # phpMyAdmin
+  phpmyadmin:
+    container_name: test-laravel-docker-phpmyadmin
+    image: phpmyadmin/phpmyadmin
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: database
-      MYSQL_USER: user
-      MYSQL_PASSWORD: pass
-      TZ: 'Asia/Tokyo'
+      - PMA_ARBITRARY=1
+      - PMA_HOSTS=test-laravel-docker-mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=${ROOTPASS}
+    ports:
+      - "8080:80"
